@@ -4,6 +4,14 @@ import os
 import torch
 import matplotlib.pyplot as plt
 
+def isNumber(string):
+    try:
+        float(string)
+
+        return True
+    except ValueError:
+        return False
+
 def matrixMultiplyChunk(collumn, row, kernelSize, matrixInput, matrixMultiplier):
     chunk = matrixInput[row-1:row-1+kernelSize+1]
 
@@ -64,6 +72,12 @@ def main():
 
     percentage = 0
 
+    weights = torch.tensor([[]])
+
+    biases = torch.tensor([[]])
+
+    connections = []
+
     print("Type path to video:")
 
     path = input()
@@ -104,6 +118,29 @@ def main():
     ffmpeg.input("tempUncompressed.mp3").output("temp.mp3", audio_bitrate="100k", ar=32000, y=None).run(quiet=True)
 
     os.remove("tempUncompressed.mp3")
+
+    # Opens the file that stores the whole model.
+
+    model = open("model.txt", "r")
+
+    modelString = model.read()
+
+    currentNumber = ""
+
+    currentStringToBeWrittenTo = 0
+
+    for char in modelString:
+        if char == "B":
+            currentStringToBeWrittenTo = 1
+
+        if currentStringToBeWrittenTo == 0:
+            if isNumber(char):
+                currentNumber += char
+            else:
+                if isNumber(currentNumber):
+                    connections.append(float(currentNumber))
+
+                currentNumber = ""
 
     while running:
         ffmpeg.input("temp.mp3", ss=audioTime, t=0.1).output("slice.wav", acodec="copy").run(quiet=True, overwrite_output=True)
