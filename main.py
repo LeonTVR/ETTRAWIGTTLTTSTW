@@ -14,22 +14,27 @@ def runKernel(kernel, matrixInput, step, kernelSize):
 
     convoluting = True
 
-    row = 1
-    collumn = 1
+    row = 0
+    collumn = 0
 
     while convoluting:
-        matrix[row-1:row-1+kernelSize+1]
+        # Sees if the kernel is at the end of its row. Then checks if it's at the end of its collumn, if it's both, then it stops convoluting since it's done.
 
-        if row-1 > matrix[row-1].len():
-            collumn += 1
-            row = 1
+        if collumn > matrix.shape[1]-(kernelSize-1):
+            if row > matrix.shape[0]-(kernelSize-1):
+                convoluting = False
+            else:
+                collumn = 0
 
-        if collumn > matrix.len():
-            convoluting = False
+                row += 1
+
+        matrixMultiplyChunk(collumn, row, kernelSize, matrix, kernel)
 
     return matrix
 
 def getPhoneme(path):
+    # This turns the audio slice that it gets from the video and turns it into a spectrogram for the CNN.
+
     out, _ = ffmpeg.input("slice.wav").output("pipe:1", format="wav", ac=1, ar="32000").run(capture_stdout=True, quiet=True)
 
     audioData = torch.frombuffer(out, dtype=torch.int16)
@@ -50,9 +55,7 @@ def getPhoneme(path):
 
     step = 1
 
-    kernelSize = 4
-
-
+    kernelSize = 2
 
 def main():
     wordList = []
